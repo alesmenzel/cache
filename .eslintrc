@@ -1,0 +1,10 @@
+{
+  "extends": ["airbnb", "plugin:prettier/recommended"],
+  "env": {
+    "jest": true,
+    "node": true
+  },
+  "rules": {
+    "no-shadow": "off"
+  }
+}
