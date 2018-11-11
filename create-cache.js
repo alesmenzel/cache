@@ -86,6 +86,7 @@ const createCache = (options = {}) => {
       precache = -1, // Disabled by default
       hash = md5,
       resolve = stringify,
+      timeout = -1, // Disabled by default
     } = { ...options, ...overrides };
 
     if (!storage) {
@@ -108,8 +109,16 @@ const createCache = (options = {}) => {
       const newArgs = args.slice(0, args.length - 1);
       const next = args[args.length - 1];
       const argsId = resolve(args);
+      let timeoutId = null;
 
-      storage.get(functionId, argsId, (err, data, timeLeft) => {
+      const callback = (err, data, timeLeft) => {
+        if (timeout !== -1 && !timeoutId) {
+          return;
+        }
+
+        clearTimeout(timeoutId);
+        timeoutId = null;
+
         if (err) {
           next(err);
           return;
@@ -160,7 +169,15 @@ const createCache = (options = {}) => {
 
         debug('Returning cache');
         next(null, ...data);
-      });
+      };
+
+      if (timeout !== -1) {
+        timeoutId = setTimeout(() => {
+          debug('Timeouted');
+          callback();
+        }, timeout);
+      }
+      storage.get(functionId, argsId, callback);
     };
 
     /**

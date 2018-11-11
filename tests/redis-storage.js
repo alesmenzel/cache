@@ -4,7 +4,12 @@ const redis = require('redis');
 const { createCache, RedisStorage } = require('../');
 
 const client = redis.createClient('redis://localhost:6379');
-const register = createCache({ storage: new RedisStorage(client) });
+const register = createCache({
+  storage: new RedisStorage(client),
+  ttl: 10,
+  precache: 5,
+  timeout: 200,
+});
 
 client.on('ready', () => {
   const fnc = (a, b, next) => {
