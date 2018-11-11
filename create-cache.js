@@ -46,7 +46,7 @@ const replaceObjects = (key, value) => {
       .map(key => [key, value[key]])
       .sort((a, b) => {
         const keyA = a[0].toUpperCase();
-        const keyB = b[1].toUpperCase();
+        const keyB = b[0].toUpperCase();
 
         if (keyA < keyB) {
           return -1;
@@ -68,7 +68,7 @@ const replaceObjects = (key, value) => {
  *
  * @param {Array} args Arguments
  */
-const stringify = args => md5(JSON.stringify(args, replaceObjects));
+const stringify = args => md5(JSON.stringify(args.slice(0, args.length - 1), replaceObjects));
 
 /**
  * Create cache service

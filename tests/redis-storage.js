@@ -15,20 +15,20 @@ client.on('ready', () => {
 
   const { cache } = register(fnc);
 
-  cache(123456, ['hello', 'world'], (err, a, b) => {
+  cache(123456, { a: 'hello', b: 'world' }, (err, a, b) => {
     assert.equal(err, null);
     assert.deepEqual(a, 123456);
-    assert.deepEqual(b, ['hello', 'world']);
+    assert.deepEqual(b, { a: 'hello', b: 'world' });
 
-    cache(123, ['hello', 'world'], (err, a, b) => {
+    cache(123456, { b: 'world', a: 'hello' }, (err, a, b) => {
       assert.equal(err, null);
-      assert.deepEqual(a, 123);
-      assert.deepEqual(b, ['hello', 'world']);
+      assert.deepEqual(a, 123456);
+      assert.deepEqual(b, { a: 'hello', b: 'world' });
 
-      cache(123456, ['hello', 'world'], (err, a, b) => {
+      cache(123456, { a: 'hello', b: 'world' }, (err, a, b) => {
         assert.equal(err, null);
         assert.deepEqual(a, 123456);
-        assert.deepEqual(b, ['hello', 'world']);
+        assert.deepEqual(b, { a: 'hello', b: 'world' });
 
         process.exit(0);
       });
