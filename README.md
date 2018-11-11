@@ -1,4 +1,4 @@
-# 🎲 Cache
+# 🎲 Cache [![npm version](https://badge.fury.io/js/%40alesmenzel%2Fcache.svg)](https://badge.fury.io/js/%40alesmenzel%2Fcache)
 
 Async function cache.
 
