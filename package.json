@@ -1,6 +1,6 @@
 {
   "name": "@alesmenzel/cache",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-beta.1",
   "description": "Async function cache",
   "license": "MIT",
   "keywords": [
