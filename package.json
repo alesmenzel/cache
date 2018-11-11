@@ -15,6 +15,11 @@
     "format": "prettier --write \"./**/*.{js,json,css,md}\"",
     "test": "jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alesmenzel/cache"
+  },
+  "homepage": "https://github.com/alesmenzel/cache",
   "contributors": [
     "Aleš Menzel <alesmenzel@gmail.com>"
   ],
