@@ -8,6 +8,15 @@ Async function cache.
 npm i @alesmenzel/cache
 ```
 
+## Storages (built in)
+
+See [examples](./examples) directory too see the usage of each storage.
+
+| code                            | description                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------ |
+| `new MemoryStorage()`           | In memory storage, uses Map as storage.                                              |
+| `new RedisStorage(redisClient)` | Redis storage, requires [redis](https://www.npmjs.com/package/redis) module to work. |
+
 ## Usage
 
 ### Configuration
@@ -68,11 +77,13 @@ Any option that is used on `register` can be also set as a default value in `cre
 
 ### Register cache options
 
+Overridable property means you can set it as default for `createCache` and then override it in `register`.
+
 | name       | description                                                                                                                                                                                                                                                                                                                                               | default                                           | overridable |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------- |
 | `key`      | Key is used to uniquely identify a memoized function, by default it uses filepath to the function and its position in the file to determine uniqness. Note that the path is taken from the process´s cwd. (e.g. `/src/service/data.js:58:18`)                                                                                                             | `md5(<function-filepath>:<row>:<col>)`            | `true`      |
 | `ttl`      | Time to live in seconds                                                                                                                                                                                                                                                                                                                                   | `3600` seconds = 1h                               | `true`      |
-| `precache` | Time in seconds before the the cache expires. You can update the cache before it expires, so there are no "down times" after the cache expires and is recached.                                                                                                                                                                                           | `-1` (disabled)                                   | `true`      |
+| `precache` | Time in seconds before the the cache expires. You can update the cache before it expires, so there are no "down times" after the cache expires and is recached. **Note that multiple calls to the cache will result in a single precache call.**                                                                                                          | `-1` (disabled)                                   | `true`      |
 | `hash`     | Hashing function that is used to hash the function unique key and arguments key.                                                                                                                                                                                                                                                                          | `key => md5(key)`                                 | `true`      |
 | `resolve`  | Resolve function is used to stringify arguments of a function and create unique arguments key. **Note** that by default is used `JSON.stringify` with a object replacer function that converts objects to array of touples because objects **do not guarantee the order of keys**. (Which could cause different unique argument keys for the same input.) | `key => md5(JSON.stringify(key, replaceObjects))` | `true`      |
 | `timeout`  | Time in seconds to wait for cache before calling the original function. Cache needs to be fast, in case it does not return any data in time, it should call the original function.                                                                                                                                                                        | `-1` (disabled)                                   | `true`      |
