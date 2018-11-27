@@ -7,8 +7,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Cache",
-      "program": "${workspaceFolder}/cache.js"
+      "name": "Example: Redis",
+      "program": "${workspaceFolder}/example/redis-storage.js"
     }
   ]
 }
