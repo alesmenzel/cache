@@ -1,6 +1,6 @@
 # 🎲 Cache [![npm version](https://badge.fury.io/js/%40alesmenzel%2Fcache.svg)](https://badge.fury.io/js/%40alesmenzel%2Fcache)
 
-Async function cache.
+Caching module for asynchrounous functions.
 
 ## Installation
 
@@ -52,17 +52,48 @@ const getSum = (a, b, next) => {
 Here we create the actual caching function. Function `register` accepts the function to cache and options as a seconds parameter. Those options will override the default configuration set in `createCache` for this particular caching function. See [options](#options).
 
 ```js
-const { cache } = register(fnc, { ttl: 60, precache: 55 }); // you can also override the defaults
-
-cache(10, 30, (err, sum) => {
-  // 40 from the fnc
-
-  // Subsequent calls will get the cached value before it expires (ttl)
-  cache(10, 30, (err, sum) => {
-    // 40 from the cache
-  }
+// Expensive function we want to cache
+const myCostlyFunction = (a, b, next) => {
+  setTimeout(() => {
+    next(null, a + b);
+  }, 10000);
 }
 
+// Here we use the `register` function from the configuratino example
+// Notice we can override the global TTL and precache options
+const { cache, clear } = register(myCostlyFunction, { ttl: 60, precache: 45 });
+
+// `cache` is a wrapper function that accepts the same parameters as your original function
+// `clear` is function that lets you clear the cache (it will purge cache for all
+// inputs for the function)
+cache(10, 30, (err, sum) => {
+  // returns `sum = 40` from the original function (because no cache was found)
+}
+
+// Imagine some time passed (e.g. 30s)
+// We call the same function with the same parameters
+cache(10, 30, (err, sum) => {
+  // returns `sum = 40` from the cache (because we set the ttl to 60s)
+}
+
+// More time passes (e.g. another 20s)
+cache(10, 30, (err, sum) => {
+  // returns `sum = 40` from the cache (because we set the ttl to 60s)
+  // but also requests new data from the original function because we are in precache phase
+  // Note that we still return cached data immediately and call the original
+  // function in the background.
+}
+
+// More time passes (e.g. another 5s)
+// The original function still did not return data
+cache(10, 30, (err, sum) => {
+  // returns `sum = 40` from the cache (because we set the ttl to 60s)
+  // We are in precache phase so we should request new data, but we have already
+  // called it and are waiting for the response in the previous call - so instead
+  // of calling it again and creating race conditions, we wait for the original
+  // request (so no matter how many times you call your cache(...), precache is
+  // called only single time).
+}
 ```
 
 ## Options
