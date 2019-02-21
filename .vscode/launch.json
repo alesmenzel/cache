@@ -7,6 +7,12 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/src/examples/index.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Example: Redis",
       "program": "${workspaceFolder}/example/redis-storage.js"
     }

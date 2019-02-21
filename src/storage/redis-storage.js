@@ -13,7 +13,7 @@ class RedisStorage {
    * @param {Function} next Callback
    */
   get(funcId, argsId, next) {
-    debug('Getting cache for', funcId, argsId);
+    debug(`Getting cache for ${funcId}:${argsId}`);
     this.client.get(`${funcId}:${argsId}`, (err, data) => {
       if (err) {
         next(err);
@@ -21,28 +21,28 @@ class RedisStorage {
       }
 
       if (!data) {
-        debug('Cache miss');
+        debug('Miss');
         next();
         return;
       }
 
-      debug('Cache returned');
+      debug('Hit', data);
       let parsed;
       try {
-        parsed = JSON.stringify(data);
+        parsed = JSON.parse(data);
       } catch (err) {
         debug('Invalid format', err);
-        next();
+        next(err);
         return;
       }
 
       if (!parsed || !Array.isArray(parsed)) {
-        debug('Empty or invalid response after parse');
-        next();
+        debug('Invalid response', parsed);
+        next(new Error('Invalid response'));
         return;
       }
 
-      debug('Getting TTL for the key');
+      debug(`Getting TTL for ${funcId}:${argsId}`);
       this.client.ttl(`${funcId}:${argsId}`, (err, ttl) => {
         if (err) {
           next(err);
@@ -65,7 +65,7 @@ class RedisStorage {
    * @param {Function} next Callback
    */
   set(funcId, argsId, data, options, next) {
-    debug('Setting cache for', funcId, argsId, data, options);
+    debug(`Setting cache for ${funcId}:${argsId}`, JSON.stringify({ data, options }));
     this.client.set(`${funcId}:${argsId}`, JSON.stringify(data), 'EX', options.ttl, err => {
       if (err) {
         next(err);
@@ -84,7 +84,7 @@ class RedisStorage {
    * @param {Function} next Callback
    */
   delete(funcId, next) {
-    debug('Deleting cache for', funcId);
+    debug(`Deleting cache for ${funcId}:*`);
     this.client.keys(`${funcId}*`, (err, keys) => {
       if (err) {
         next(err);
@@ -97,7 +97,7 @@ class RedisStorage {
         return;
       }
 
-      debug('Deleting keys', keys);
+      debug(`Deleting ${keys.length} key(s)`, JSON.stringify(keys));
       this.client.del(keys, err => {
         if (err) {
           next(err);

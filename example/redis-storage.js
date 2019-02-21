@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies, no-console */
 const assert = require('assert');
 const redis = require('redis');
 const { createCache, RedisStorage } = require('../');
@@ -6,9 +6,9 @@ const { createCache, RedisStorage } = require('../');
 const client = redis.createClient('redis://localhost:6379');
 const register = createCache({
   storage: new RedisStorage(client),
-  ttl: 10,
-  precache: 5,
-  timeout: 200,
+  ttl: 10, // s
+  precache: 5, // s
+  timeout: 0.2, // s
 });
 
 client.on('ready', () => {

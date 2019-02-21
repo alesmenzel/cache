@@ -1,7 +1,7 @@
 // @ts-nocheck
 const debug = require('debug')('cache:create-cache');
 
-const { noop, md5, filepath, stringify } = require('./helpers');
+const { md5, filepath, stringify } = require('./helpers');
 
 /**
  * Create cache service
@@ -10,15 +10,14 @@ const { noop, md5, filepath, stringify } = require('./helpers');
  */
 const createCache = (options = {}) => {
   const { storage } = options;
-  const queue = new Set();
 
   return (fnc, overrides = {}) => {
     const {
-      key,
+      prefix, // Storage key prefix
+      key, // Unique key identifying a function
       ttl = 60 * 60, // 60 minutes
       precache = -1, // Disabled by default
-      hash = md5,
-      resolve = stringify,
+      hash = stringify, // Function to resolve function arguments into unique key
       timeout = -1, // Disabled by default
     } = { ...options, ...overrides };
 
@@ -26,12 +25,8 @@ const createCache = (options = {}) => {
       throw new Error('You must specify a storage option.');
     }
 
-    let functionId;
-    if (key) {
-      functionId = key;
-    } else {
-      functionId = hash(filepath(new Error().stack));
-    }
+    const keyId = key || md5(filepath(new Error().stack));
+    const functionId = prefix ? `${prefix}:${keyId}` : keyId;
 
     /**
      * Return cache
@@ -39,9 +34,9 @@ const createCache = (options = {}) => {
      * @param  {any[]} args Arguments
      */
     const cache = (...args) => {
-      const newArgs = args.slice(0, args.length - 1);
+      const newArgs = args.slice(0, -1);
       const next = args[args.length - 1];
-      const argsId = resolve(args);
+      const argsId = hash(args);
       let timeoutId = null;
 
       const callback = (err, data, timeLeft) => {
@@ -57,42 +52,40 @@ const createCache = (options = {}) => {
           return;
         }
 
-        debug('Ret:', data, timeLeft);
         if (!data) {
-          debug('Caching');
+          debug('Calling the original function');
           fnc(...newArgs, (err, ...data) => {
             if (err) {
               next(err);
               return;
             }
 
-            // We ignore the callback on purpose
-            storage.set(functionId, argsId, data, { ttl }, noop);
-            // Dont wait for it to set the value
+            storage.set(functionId, argsId, data, { ttl }, err => {
+              if (err) {
+                debug('Error while setting cache', err);
+              }
+            });
+
+            // Skip waiting for setting the cache
             next(null, ...data);
           });
           return;
         }
 
         if (precache !== -1 && timeLeft <= precache) {
-          const uniqueId = `${functionId}:${argsId}`;
-
-          if (queue.has(uniqueId)) {
-            next(null, data);
-            return;
-          }
-
-          queue.add(uniqueId);
-          debug('Precaching');
+          debug('Calling the original function (Precache)');
           fnc(...newArgs, (err, ...data) => {
-            queue.delete(uniqueId);
             if (err) {
-              next(err);
+              debug('Precache returned an error', err);
               return;
             }
 
-            // We ignore the callback on purpose
-            storage.set(functionId, argsId, data, { ttl }, noop);
+            // We ignore the error and callback on purpose
+            storage.set(functionId, argsId, data, { ttl }, err => {
+              if (err) {
+                debug('Error while setting cache', err);
+              }
+            });
           });
 
           // Dont wait for the fnc to finish
@@ -108,7 +101,7 @@ const createCache = (options = {}) => {
         timeoutId = setTimeout(() => {
           debug('Timeouted');
           callback();
-        }, timeout);
+        }, timeout * 1000);
       }
       storage.get(functionId, argsId, callback);
     };
