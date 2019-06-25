@@ -4,12 +4,16 @@ const async = require('async');
 const { createCache, RedisStorage } = require('../');
 
 const client = redis.createClient('redis://localhost:6379');
-const register = createCache({
-  prefix: '_CACHE_',
+const redisCache = createCache({
+  prefix: '__CACHE__',
   storage: new RedisStorage(redis),
   ttl: 30, // seconds (defaults to 60 minutes)
   precache: 15, // seconds (time remaining), set to -1 to disable (defaults to -1)
   timeout: 0.5, // seconds
+});
+
+redisCache.on('error', err => {
+  console.log(err);
 });
 
 client.on('ready', () => {
@@ -22,7 +26,7 @@ client.on('ready', () => {
     });
   };
 
-  const { cache, clear } = register(myCostlyFunction, {
+  const { cache, clear } = redisCache.register(myCostlyFunction, {
     ttl: 10,
     precache: 5,
     key: '_MYFUNCTION_',

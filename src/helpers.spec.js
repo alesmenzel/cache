@@ -55,29 +55,26 @@ describe('helpers', () => {
     });
   });
 
-  describe('replaceObjects', () => {
-    test('replaces objects with array of touples', () => {
-      const obj = { a: 5, b: 6 };
-      expect(JSON.stringify(obj, helpers.replaceObjects)).toEqual('[["a",5],["b",6]]');
-    });
-
-    test('array is sorted by key names', () => {
-      const obj = { b: 6, a: 5, c: 8 };
-      expect(JSON.stringify(obj, helpers.replaceObjects)).toEqual('[["a",5],["b",6],["c",8]]');
-    });
-
-    test('handle recursive objects', () => {
-      const obj = { b: 6, a: { c: { d: 1, e: 2 } } };
-      expect(JSON.stringify(obj, helpers.replaceObjects)).toEqual(
-        '[["a",[["c",[["d",1],["e",2]]]]],["b",6]]'
-      );
+  describe('uniqueKey', () => {
+    test('args array to hash', () => {
+      const args = [{ b: 6, a: { c: { d: 1, e: 2 } } }];
+      expect(helpers.stringify(args)).toBe('f8b045aa8b7a398a0fc6bf8d0ee7995f');
     });
   });
 
-  describe('stringify', () => {
-    test('args array to hash', () => {
-      const args = [{ b: 6, a: { c: { d: 1, e: 2 } } }, () => {}];
-      expect(helpers.stringify(args)).toBe('73fc54e0698fea35fe2c121cbd2cbbef');
+  describe('isTimeoutEnabled', () => {
+    test('timeout is null', () => {
+      expect(helpers.isTimeoutEnabled(null)).toBe(false);
+    });
+
+    test('timeout is a number', () => {
+      expect(helpers.isTimeoutEnabled(2000)).toBe(true);
+    });
+  });
+
+  describe('getKey', () => {
+    test('return key', () => {
+      expect(helpers.getKey('a', 'b', 'c')).toBe('a:b:c');
     });
   });
 });

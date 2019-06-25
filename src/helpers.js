@@ -1,5 +1,10 @@
 const crypto = require('crypto');
+const ms = require('ms');
+const stringify = require('fast-json-stable-stringify');
 
+/**
+ * Get the current working directory
+ */
 const cwd = () => process.cwd();
 
 /**
@@ -32,40 +37,39 @@ const filepath = str =>
     .replace(/\\/g, '/'); // Cross-platform
 
 /**
- * Replace objects as array touples because objects key order is not guaranteed
- * which could potentially cause different unique arguments keys
- *
- * @param {String} key Key
- * @param {*} value Value
- */
-const replaceObjects = (key, value) => {
-  if (value && !Array.isArray(value) && typeof value === 'object') {
-    return Object.keys(value)
-      .map(key => [key, value[key]])
-      .sort((a, b) => {
-        const keyA = a[0].toUpperCase();
-        const keyB = b[0].toUpperCase();
-
-        if (keyA < keyB) {
-          return -1;
-        }
-
-        if (keyA > keyB) {
-          return 1;
-        }
-
-        return 0;
-      });
-  }
-
-  return value;
-};
-
-/**
  * Stringify arguments into a unique key
  *
  * @param {Array} args Arguments
  */
-const stringify = args => md5(JSON.stringify(args.slice(0, args.length - 1), replaceObjects));
+const uniqueKey = args => md5(stringify(args));
 
-module.exports = { cwd, noop, md5, filepath, replaceObjects, stringify };
+/**
+ * Convert input to seconds (e.g. '30s' -> 30 or '1h' -> 3600)
+ *
+ * @param {String|Number} time Time
+ */
+const toSeconds = time => {
+  if (typeof time === 'string') {
+    return Math.round(ms(time) / 1000);
+  }
+
+  return time;
+};
+
+/**
+ * Return whether timeout is enabled
+ *
+ * @param {Number|null} timeout Timeout in seconds
+ */
+const isTimeoutEnabled = timeout => Number.isFinite(timeout);
+
+/**
+ * Return cache key
+ *
+ * @param {string} prefix
+ * @param {string} funcId
+ * @param {string} argsId
+ */
+const getKey = (prefix, funcId, argsId) => `${prefix}:${funcId}:${argsId}`;
+
+module.exports = { cwd, noop, md5, filepath, uniqueKey, toSeconds, isTimeoutEnabled, getKey };
