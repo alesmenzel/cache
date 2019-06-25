@@ -1,7 +1,14 @@
 const debug = require('debug')('cache:create-cache');
 const EventEmitter = require('events');
 
-const { md5, filepath, uniqueKey, toSeconds, isTimeoutEnabled } = require('./helpers');
+const {
+  md5,
+  filepath,
+  uniqueKey,
+  toSeconds,
+  isTimeoutEnabled,
+  isPrecacheEnabled,
+} = require('./helpers');
 
 class Cache extends EventEmitter {
   /**
@@ -97,27 +104,26 @@ class Cache extends EventEmitter {
           return;
         }
 
-        debug('Should precache', { precache, timeLeft });
-        if (precache !== -1 && timeLeft <= precache) {
-          debug('Calling the original function (Precache)');
-          fnc(...params, (err, ...data) => {
-            if (err) {
-              debug('Precache returned an error', err);
-              this.emit('error', err);
-              return;
-            }
-
-            this.storage.set(functionId, argsId, data, { prefix, ttl }, err => {
+        debug('Should precache, %o', { ttl, precache, timeLeft });
+        if (isPrecacheEnabled(precache) && ttl - timeLeft >= precache) {
+          process.nextTick(() => {
+            debug('Calling the original function (Precache)');
+            fnc(...params, (err, ...data) => {
               if (err) {
-                debug('Error while setting cache', err);
+                debug('Precache returned an error', err);
                 this.emit('error', err);
+                return;
               }
+
+              this.storage.set(functionId, argsId, data, { prefix, ttl }, err => {
+                if (err) {
+                  debug('Error while setting cache', err);
+                  this.emit('error', err);
+                }
+              });
             });
           });
-
-          // Dont wait for the fnc to finish
-          next(null, ...data);
-          return;
+          // Let fall through
         }
 
         debug('Returning cache');

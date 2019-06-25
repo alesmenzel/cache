@@ -8,6 +8,10 @@ const Cache = require('./cache');
  * @param {Object} [options] Cache options
  */
 const createCache = (storage, options = {}) => {
+  if (!storage) {
+    throw new Error('You must specify a storage');
+  }
+
   debug(`Creating new cache, storage: ${storage.constructor.name}, options:`, options);
   return new Cache(storage, options);
 };

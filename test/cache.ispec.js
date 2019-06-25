@@ -212,8 +212,10 @@ describe('Set cache', () => {
         next => wait('3s', next),
         next => cache({ value: 256 }, 64, next),
         next => {
-          expect(expensiveAsyncFncMock.mock.calls.length).toBe(2);
-          next();
+          process.nextTick(() => {
+            expect(expensiveAsyncFncMock.mock.calls.length).toBe(2);
+            next();
+          });
         },
       ],
       next

@@ -61,7 +61,30 @@ const toSeconds = time => {
  *
  * @param {Number|null} timeout Timeout in seconds
  */
-const isTimeoutEnabled = timeout => Number.isFinite(timeout);
+const isTimeoutEnabled = timeout => {
+  if (!Number.isFinite(timeout)) {
+    return false;
+  }
+
+  return timeout >= 0;
+};
+
+/**
+ * Return whether precache is enabled
+ *
+ * @param {String|Number|null} ttl TTL
+ */
+const isPrecacheEnabled = ttl => {
+  if (ttl === undefined || ttl === null) {
+    return false;
+  }
+
+  if (typeof ttl === 'number') {
+    return ttl >= 0;
+  }
+
+  return true;
+};
 
 /**
  * Return cache key
@@ -72,4 +95,14 @@ const isTimeoutEnabled = timeout => Number.isFinite(timeout);
  */
 const getKey = (prefix, funcId, argsId) => `${prefix}:${funcId}:${argsId}`;
 
-module.exports = { cwd, noop, md5, filepath, uniqueKey, toSeconds, isTimeoutEnabled, getKey };
+module.exports = {
+  cwd,
+  noop,
+  md5,
+  filepath,
+  uniqueKey,
+  toSeconds,
+  isTimeoutEnabled,
+  isPrecacheEnabled,
+  getKey,
+};

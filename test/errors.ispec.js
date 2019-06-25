@@ -69,7 +69,7 @@ describe('Set cache', () => {
     const { cache } = Cache.register(expensiveAsyncFnc, {
       key: 'cache-test001',
       hash: () => '',
-      ttl: '3s',
+      ttl: '5s',
       precache: '1s',
     });
     Cache.on('error', err => {
@@ -79,7 +79,7 @@ describe('Set cache', () => {
     async.series(
       [
         next => cache({ value: 256 }, 64, next),
-        next => wait('1.5s', next),
+        next => wait('2s', next),
         // We use a predefined argsKey - we can have different arguments
         next => cache({ value: 256, throw: 'Precache failed' }, 64, next),
       ],

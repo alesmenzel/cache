@@ -18,8 +18,8 @@
     "test": "run-s test:unit test:integration",
     "test:unit": "cross-env DEBUG= jest",
     "test:unit:debug": "jest",
-    "test:integration": "cross-env DEBUG= jest --testMatch \"./**/*.ispec.js\"",
-    "test:integration:debug": "jest --testMatch \"./**/*.ispec.js\"",
+    "test:integration": "cross-env DEBUG= jest --runInBand --testMatch \"./**/*.ispec.js\"",
+    "test:integration:debug": "jest --runInBand --testMatch \"./**/*.ispec.js\"",
     "prepublishOnly": "run-s lint test",
     "publish:latest": "npm publish --access public --tag latest",
     "publish:next": "npm publish --access public --tag next"

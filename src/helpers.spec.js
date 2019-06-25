@@ -58,7 +58,7 @@ describe('helpers', () => {
   describe('uniqueKey', () => {
     test('args array to hash', () => {
       const args = [{ b: 6, a: { c: { d: 1, e: 2 } } }];
-      expect(helpers.stringify(args)).toBe('f8b045aa8b7a398a0fc6bf8d0ee7995f');
+      expect(helpers.uniqueKey(args)).toBe('7eeed4eff6e9324286063e41bf27189e');
     });
   });
 
