@@ -33,7 +33,6 @@ function main(next) {
       next => cache(1, 2, 3, next),
       next => cache('a', 'b', 'c', next),
       next => cache('x', { y: 'z' }, ['abc'], next),
-      next => Cache.purge(next),
     ],
     next
   );

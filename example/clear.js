@@ -1,17 +1,16 @@
 /* eslint-disable import/no-extraneous-dependencies, no-console */
 const redis = require('redis');
 const async = require('async');
-const ms = require('ms');
 const { createCache, RedisStorage } = require('../');
 
 const redisClient = redis.createClient('redis://localhost:6379');
-const redisCache = createCache({
+const storage = new RedisStorage(redisClient);
+const Cache = createCache(storage, {
   prefix: '__CACHE__',
-  storage: new RedisStorage(redisClient),
-  ttl: ms('1h'),
+  ttl: '30min',
 });
 
-redisCache.on('error', err => {
+Cache.on('error', err => {
   console.error(err);
   process.exit(1);
 });
@@ -21,18 +20,23 @@ redisClient.on('error', err => {
   process.exit(1);
 });
 
-function getRandomNumber(number, next) {
+const sampleFunction = (a, b, c, next) => {
   process.nextTick(() => {
-    next(null, number);
+    next(null, a, b, c);
   });
-}
+};
 
 function main(next) {
-  const { cache } = redisCache.register(getRandomNumber, { key: 'example:getRandomNumber' });
-
-  const inputs = Array.from({ length: 1 }).map(() => Math.random());
-  console.log(inputs);
-  async.each(inputs, cache, next);
+  const { cache, clear } = Cache.register(sampleFunction);
+  async.series(
+    [
+      next => cache(1, 2, 3, next),
+      next => cache('a', 'b', 'c', next),
+      next => cache('x', { y: 'z' }, ['abc'], next),
+      next => clear(next),
+    ],
+    next
+  );
 }
 
 main(err => {
@@ -40,4 +44,6 @@ main(err => {
     console.error(err);
     process.exit(1);
   }
+
+  process.exit(0);
 });
