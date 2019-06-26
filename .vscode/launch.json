@@ -7,14 +7,20 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceFolder}/src/examples/index.js"
+      "name": "Example: Set Cache",
+      "program": "${workspaceFolder}/example/set-cache.js"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Example: Redis",
-      "program": "${workspaceFolder}/example/redis-storage.js"
+      "name": "Example: Clear cache",
+      "program": "${workspaceFolder}/example/clear.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Example: Purge cache",
+      "program": "${workspaceFolder}/example/purge.js"
     }
   ]
 }
